@@ -8,6 +8,7 @@
 #include "Utilities/inc/splitLine.hh"
 
 #include <cmath>
+#include <iomanip>
 #include <stdexcept>
 
 namespace {
@@ -124,10 +125,20 @@ namespace util {
 
   //=========================================================================
   void Coordinate::print() const {
-    std::cout << " Location of coordinate << " << label_ << " >> : ( " << coord_.at(0) << "," << coord_.at(1) << " ) or [ "
-	      << coordStd_.at(0).first << " ft " << coordStd_.at(0).second << " in , "
-	      << coordStd_.at(1).first << " ft " << coordStd_.at(1).second << " in ] " 
-              << refLabel_ << " rot: " << rotWrtRef_
+    std::cout.setf( std::cout.left );
+    std::cout << " Location of coordinate << " 
+              << std::setw(3) << label_ << " >> : ( " ;
+    std::cout.unsetf( std::cout.left );
+    std::cout << std::setw(8) << coord_.at(0) << "," 
+              << std::setw(8) << coord_.at(1) << " ) or [ "
+	      << std::setw(4) << coordStd_.at(0).first  << " ft " 
+              << std::setw(6) << coordStd_.at(0).second << " in  , "
+	      << std::setw(4) << coordStd_.at(1).first  << " ft " 
+              << std::setw(6) << coordStd_.at(1).second << " in ] " ;
+    std::cout.setf( std::cout.left );
+    std::cout << " wrt label << " 
+              << std::setw(3) << refLabel_ << " >> at a rotation of : " 
+              << std::setw(6) << rotWrtRef_
               << std::endl;
   }
 

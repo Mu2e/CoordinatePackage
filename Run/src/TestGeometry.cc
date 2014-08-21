@@ -118,6 +118,8 @@ void constructPolygon( const string& filename ) {
   std::cout << " Polygon from file: " << filename << std::endl;
 
   CoordinateCollection ccoll( filename );
+  
+  std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -155,7 +157,9 @@ void constructPolygon( const string& filename ) {
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
 
-  vol->SetLineColor(45);
+  if ( filename.find("oundation") != std::string::npos || 
+       filename.find("rench")     != std::string::npos ) vol->SetLineColor(kGray);
+  else vol->SetLineColor(45);
 
   top->AddNode( vol, 1, rot );
 
