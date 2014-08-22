@@ -158,7 +158,8 @@ void constructPolygon( const string& filename ) {
   poly->DefineSection( 1,height,0,0,1 );
 
   if ( filename.find("oundation") != std::string::npos || 
-       filename.find("rench")     != std::string::npos ) vol->SetLineColor(kGray);
+       filename.find("rench")     != std::string::npos )  vol->SetLineColor(kGray);
+  else if ( filename.find("floor") != std::string::npos ) vol->SetLineColor(28);
   else vol->SetLineColor(45);
 
   top->AddNode( vol, 1, rot );
