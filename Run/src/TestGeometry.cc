@@ -9,13 +9,8 @@
 #include <memory>
 
 // ROOT includes
-#include "TArrow.h"
-#include "TAxis.h"
 #include "TCanvas.h"
-#include "TCut.h"
-#include "TF1.h"
 #include "TFile.h"
-#include "TGraphErrors.h"
 #include "TGeoManager.h"
 #include "TGeoMedium.h"
 #include "TGeoManager.h"
@@ -26,8 +21,6 @@
 #include "TGeoXtru.h"
 #include "TGLViewer.h"
 #include "TApplication.h"
-#include "TLatex.h"
-#include "TMarker.h"
 #include "TLine.h"
 #include "TPad.h"
 #include "TString.h"
@@ -60,12 +53,11 @@ namespace {
 
   bool OGL_;
 
-  vector<TMarker> markers_;
-
 }
 
 void runJob(const vector<string>& arguments );
-void constructPolygon( const string& filename );
+void constructPolygon( const CoordinateCollection& filename );
+void constructDirt   (       CoordinateCollection  filename );
 
 //=================================================
 int main(int argc, char* argv[]) {
@@ -89,13 +81,49 @@ int main(int argc, char* argv[]) {
 //=================================================
 void runJob( const vector<string>& args ) {
   
-  TCanvas c2;
-  for ( const auto& file : args ) {
-    constructPolygon( file );
+  // Set up geometry parameters/volumes
+  matVacuum = new TGeoMaterial("Vacuum",0,0,0);
+  matAl     = new TGeoMaterial("Al",26.98,13,2.7);
+  
+  medVacuum = new TGeoMedium("Vacuum",1,matVacuum);
+  medAl     = new TGeoMedium("Wall material",2,matAl);
+  
+  rot       = new TGeoRotation("rot",0.,-90.,-90.);
+  
+  const double dx = 50000;
+  const double dy = 50000;
+  const double dz = 50000;
+
+  std::map< worldDir::enum_type, Coordinate::Rep<double>> worldCorners =
+    {{
+        {worldDir::NW,{-dx, dy}}, // NW corner
+        {worldDir::NE,{ dx, dy}}, // NE "
+        {worldDir::SE,{ dx,-dy}}, // SE "
+        {worldDir::SW,{-dx,-dy}}  // SW "
+      }};
+  
+  
+  // Make top-level volumes
+  top = gGeoManager->MakeBox("TOP",medVacuum,dx,dy,dz);
+  gGeoManager->SetTopVolume(top);
+  
+  // Construct lower-level extruded polygons
+  for ( const auto& filename : args ) {
+    CoordinateCollection ccoll( filename, worldCorners );
+    ccoll.printSimpleConfigFile( "geom/simpleConfig_"+filename );
+    ccoll.printSimpleConfigFileVerbose( "geom/simpleConfig_verbose_"+filename );
+    
+    std::cout << " Polygon from file: " << filename << std::endl;
+    constructPolygon( ccoll );
+
+    std::cout << " Dirt    from file: " << filename << std::endl;  
+    constructDirt   ( ccoll );
   }
   gGeoManager->CloseGeometry();
   gGeoManager->SetVisLevel(3);
 
+  TCanvas c2;
+  
   if ( OGL_ ) {
     top->Draw("ogl");
     gPad->WaitPrimitive();
@@ -110,15 +138,8 @@ void runJob( const vector<string>& args ) {
 }
 
 //=================================================
-void constructPolygon( const string& filename ) {
+void constructPolygon( const CoordinateCollection& ccoll ) {
 
-  static int callCounter(0);
-  callCounter++;
-
-  std::cout << " Polygon from file: " << filename << std::endl;
-
-  CoordinateCollection ccoll( filename );
-  
   std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
   vector<double> xPos, yPos;
@@ -128,26 +149,12 @@ void constructPolygon( const string& filename ) {
       coord.print();
       xPos.push_back( coord.x() );
       yPos.push_back( coord.y() );
-      markers_.push_back( TMarker(xPos.back(),yPos.back(),20) );
     }
     ++counter;
   }
 
-  if ( callCounter == 1 ) {
-    matVacuum = new TGeoMaterial("Vacuum",0,0,0);
-    matAl     = new TGeoMaterial("Al",26.98,13,2.7);
-    
-    medVacuum = new TGeoMedium("Vacuum",1,matVacuum);
-    medAl     = new TGeoMedium("Wall material",2,matAl);
-
-    rot       = new TGeoRotation("rot",0.,-90.,-90.);
-
-    top = gGeoManager->MakeBox("TOP",medVacuum,50000,50000,50000);
-    gGeoManager->SetTopVolume(top);
-  }
-
-  TGeoVolume* vol = gGeoManager->MakeXtru( TString::Format("xtru%d",callCounter) ,medAl, 2);
-  TGeoXtru* poly = (TGeoXtru*)vol->GetShape();
+  TGeoVolume* vol = gGeoManager->MakeXtru( ccoll.volName().data(), medAl, 2);
+  TGeoXtru*  poly = (TGeoXtru*)vol->GetShape();
   
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
 
@@ -157,10 +164,46 @@ void constructPolygon( const string& filename ) {
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
 
-  if ( filename.find("oundation") != std::string::npos || 
-       filename.find("rench")     != std::string::npos )  vol->SetLineColor(kGray);
-  else if ( filename.find("floor") != std::string::npos ) vol->SetLineColor(28);
+  if      ( ccoll.volName().find("oundation") != std::string::npos || 
+            ccoll.volName().find("rench")     != std::string::npos ) vol->SetLineColor(kGray);
+  else if ( ccoll.volName().find("floor")     != std::string::npos ) vol->SetLineColor(28);
   else vol->SetLineColor(45);
+
+  top->AddNode( vol, 1, rot );
+
+}
+//=================================================
+void constructDirt( CoordinateCollection ccoll ){
+
+  const bool enoughOuterPoints = CoordinateCollection::hasOuterPoints( ccoll );
+  if ( !enoughOuterPoints ) return;
+
+  const bool boundariesAdded   = ccoll.addWorldBoundaries();
+  if ( !boundariesAdded ) return;
+
+  vector<double> xPos, yPos;
+  unsigned counter(0);
+  for( const auto& coord : ccoll.coordinates() ) {
+    if ( counter != 0 && coord.drawFlag() && coord.isOutline() ) {
+      coord.print();
+      xPos.push_back( coord.x() );
+      yPos.push_back( coord.y() );
+    }
+    ++counter;
+  }
+  
+  TGeoVolume* vol = gGeoManager->MakeXtru( TString(ccoll.volName()+"_dirt"), medAl, 2);
+  TGeoXtru*  poly = (TGeoXtru*)vol->GetShape();
+
+  poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
+
+  const double base   = OGL_ ? ccoll.height().at(0) : 0;
+  const double height = OGL_ ? ccoll.height().at(1) : 1;
+
+  poly->DefineSection( 0,base  ,0,0,1 );
+  poly->DefineSection( 1,height,0,0,1 );
+
+  vol->SetLineColor(28);
 
   top->AddNode( vol, 1, rot );
 

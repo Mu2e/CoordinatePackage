@@ -7,41 +7,51 @@
 //
 // Original author: Kyle Knoepfel
 
-//
-// Class for converting an (x,y) pair from standard units (formatted
-// as a string), to metric units (mm).  The construction of the object looks like:
-//
-//     Coordinate("xft:xin,yft:yin"), 
-//
-// where xft, yft are integers expressed within the string, and xin,
-// yin are doubles expressed within the string.  Acceptable examples
-// include:
-//
-//     Coordinate("-4:3,5:6") // parsed as x = -4' 3" | y =  5'  6"
-//     Coordinate(":3,4")     // parsed as x =  0' 3" | y =  4'  0"
-//
-// Note the following example:
-//
-//     Coordinate("2:,-:5")   // parsed as x =  2' 0" | y = -0' +5" 
-//
-// you probably don't want this, instead you'll have to do something like:
-//
-//     Coordinate("2:,:-5")   // parsed as x =  2' 0" | y =  0' -5"
-//
-// Also note that the number preceding the : is converted to an
-// integer, whereas the number afterward is cast into a double so that
-// floating-point inch values are allowed.  Note that a double value
-// for feet does not make sense.  For example
-//
-//     Coordinate("2.5:2,-3:2") // parsed as x = 2' 2" | y = -3' 2"
-//
-// No free function currently exists for adding coordinates, but it
-// would be straightforward to do if needed.
+// See docdb-xxxx for information about how the interface works.
 
 // C++ includes
 #include <array>
 #include <iostream>
 #include <utility>
+
+namespace worldDir {
+  enum enum_type { 
+
+    // Instantiation
+    none=0, 
+
+    // Cardinal directions (world walls)
+    N=2,
+    E=4, 
+    S=6, 
+    W=8,
+
+    // Corners of world
+    NW=1,
+    NE=3,
+    SE=5,
+    SW=7
+  };
+  
+  inline enum_type stringToEnum( const std::string& str ) {
+    enum_type type (none);
+    
+    if ( str.length() != 1 ) 
+      throw std::runtime_error("Wall option << " +str+ " >> is not supported!");
+
+    switch( str.at(0) ) {
+    case 'N' : type = N; break;
+    case 'E' : type = E; break;
+    case 'S' : type = S; break;
+    case 'W' : type = W; break;
+    default: 
+      throw std::runtime_error("Wall option << " +str+ " >> is not supported!");
+    }
+    
+    return type;
+  }
+
+}
 
 namespace util {
   
@@ -54,13 +64,23 @@ namespace util {
     
     // Constructors
     explicit Coordinate( const std::string& input ); 
+
+    explicit Coordinate( const Rep<double>& point,
+                         const std::string& label,
+                         worldDir::enum_type worldBoundary,
+                         bool draw,
+                         bool isOut );
     
     // Accessors
-    bool drawFlag() const { return draw_; }
+    const std::string& inputString() const { return inputString_; }
 
-    const std::string& label()    const { return label_;    }
-    const std::string& refLabel() const { return refLabel_; }
-    double rot() const { return rotWrtRef_; }
+    bool drawFlag()  const { return draw_;  }
+    bool isOutline() const { return isOut_; }
+    worldDir::enum_type worldBoundary() const { return worldBoundary_; }
+
+    const std::string& label()    const { return label_;     }
+    const std::string& refLabel() const { return refLabel_;  }
+    double rot()                  const { return rotWrtRef_; }
 
     const Rep<FtInchPair>& getCoordStd() const { return coordStd_; } // Coordinate (wrt ref) in ft. and inches
     const Rep<double>    & getCoordRel() const { return coordRel_; } // Coordinate (wrt ref) in mm
@@ -89,12 +109,16 @@ namespace util {
 
   private:
 
+    std::string inputString_;
+
     std::string label_;
     std::string coordStr_;
     std::string refLabel_;
     double      rotWrtRef_;
 
     bool draw_;
+    bool isOut_;
+    worldDir::enum_type worldBoundary_;
 
     Rep<FtInchPair> coordStd_;
     Rep<double>     coordRel_;

@@ -12,6 +12,7 @@
 #include "Utilities/inc/Coordinate.hh"
 
 // C++ includes
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -25,22 +26,47 @@ namespace util {
     template <typename T> using Rep = Coordinate::Rep<T>;
 
     // Constructors
-    explicit CoordinateCollection( const std::string& inputCollection ); 
+    explicit CoordinateCollection( const std::string& inputCollection,
+                                   const std::map<worldDir::enum_type,Coordinate::Rep<double>>& worldCorners); 
     
+    const std::string&             volName()     const { return volName_;   }
+
     const std::vector<Coordinate>& coordinates() const { return coordList_; }
     const Rep<double>&             height()      const { return height_;    }
 
-  private:
+    const Rep<double>& worldCorner(worldDir::enum_type i) const { 
+      return worldCorners_.find(i)->second; 
+    }
 
+    void printSimpleConfigFile( std::string const & filename ) const;
+    void printSimpleConfigFileVerbose( std::string const & filename ) const;
+
+    bool addWorldBoundaries();
     
+    static bool hasOuterPoints( const CoordinateCollection& ccoll );
+
+  private:
+    
+    std::string inputFile_;
+    std::map<worldDir::enum_type,Rep<double>> worldCorners_;
+
+    std::string volName_;
+
     std::set<std::string> keyList_;
     std::vector<Coordinate>  coordList_;
+    std::vector<Coordinate>  boundaryList_;
     Rep<double> height_;
 
-    Rep<double> assignHeight( const std::string& inputString );
+    std::string assignVolName( const std::string& inputString );
+    Rep<double> assignHeight ( const std::string& inputString );
     void check_and_push_back( Coordinate& coordStr );
 
     Coordinate getReferenceCoordinate( const std::string& refLabel ) const;
+
+    Coordinate getWallCoordinate     ( const Coordinate& c1, const std::string& label ) const;
+    Coordinate getCornerCoordinate   ( const worldDir::enum_type type1, const worldDir::enum_type type2 ) const;
+    
+    static void checkBoundaryPairForCongruency( const Coordinate& c1, const Coordinate& c2 );
 
   };
  

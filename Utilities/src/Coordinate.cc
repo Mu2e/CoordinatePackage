@@ -7,6 +7,7 @@
 #include "Utilities/inc/Coordinate.hh"
 #include "Utilities/inc/splitLine.hh"
 
+#include <cctype>
 #include <cmath>
 #include <iomanip>
 #include <stdexcept>
@@ -24,10 +25,28 @@ namespace util {
   
   //=========================================================================
   Coordinate::Coordinate( const std::string& inputString )
-    : rotWrtRef_(-1000.)
+    : inputString_(inputString)
+    , rotWrtRef_(-1000.)
     , draw_(true)
-    , coordStd_( readCoordinatesStd( inputString ) ) 
-    , coordRel_( calcRelCoordinates( coordStd_ )   )
+    , isOut_(false)
+    , worldBoundary_(worldDir::none)
+    , coordStd_( readCoordinatesStd( inputString_ ) ) 
+    , coordRel_( calcRelCoordinates( coordStd_ )    )
+  {}
+  
+  //=========================================================================
+  Coordinate::Coordinate( const Rep<double>& point,
+                          const std::string& label,
+                          worldDir::enum_type worldBoundary,
+                          bool draw,
+                          bool isOut )
+    : label_(label)
+    , refLabel_("*")
+    , rotWrtRef_(0.)
+    , draw_(draw)
+    , isOut_(isOut)
+    , worldBoundary_( worldBoundary )
+    , coord_( point )
   {}
   
   
@@ -35,11 +54,13 @@ namespace util {
   Coordinate::Rep<Coordinate::FtInchPair> Coordinate::readCoordinatesStd( const std::string& inputString ) {
 
     // Assign label, references, and coordinate string assuming form:
-    // "B)<A|14>xStd:yStd
-    auto labelDelim    = inputString.find(")");
-    auto refLeftDelim  = inputString.find("<");
-    auto refRightDelim = inputString.find(">");
-    auto rotDelim      = inputString.find("|");
+    // "B)[N]<A|14>xStd:yStd
+    const std::size_t labelDelim     = inputString.find(")");
+    const std::size_t wallLeftDelim  = inputString.find("[");
+    const std::size_t wallRightDelim = inputString.find("]");
+    const std::size_t refLeftDelim   = inputString.find("<");
+    const std::size_t refRightDelim  = inputString.find(">");
+    const std::size_t rotDelim       = inputString.find("|");
 
     // Get label
     if ( labelDelim != std::string::npos ) label_ = inputString.substr( 0, labelDelim );
@@ -50,12 +71,24 @@ namespace util {
       draw_ = false;
       label_ = label_.substr( label_.find_last_of("/")+1 );
     }
+    
+    // Check if coordinate represents point on the outside
+    if ( std::islower( label_[0] ) ) isOut_ = true;
 
     // Make sure there's an ordered pair
     if ( inputString.find(",") == std::string::npos ) 
       throw std::runtime_error("Label << "+label_+" >> has no ordered pair!  You probably forgot the ',' character." ); 
 
-    // Get reference
+    // Get wall reference
+    const bool yesWallRef  = ( wallLeftDelim != std::string::npos && wallRightDelim != std::string::npos );
+    const bool noWallRef   = ( wallLeftDelim == std::string::npos && wallRightDelim == std::string::npos );
+    if ( !yesWallRef && !noWallRef ) throw std::runtime_error(" Missing \"[\" or \"]\" for coordinate \""+inputString+"\"");
+
+    if ( yesWallRef) {
+      worldBoundary_ = worldDir::stringToEnum( inputString.substr( wallLeftDelim+1, wallRightDelim-wallLeftDelim-1 ) );
+    }
+
+    // Get origin reference
     const bool newOrigin = ( refLeftDelim != std::string::npos && refRightDelim != std::string::npos );
     const bool oldOrigin = ( refLeftDelim == std::string::npos && refRightDelim == std::string::npos );
     if ( !newOrigin && !oldOrigin ) throw std::runtime_error(" Missing \"<\" or \">\" for coordinate \""+inputString+"\"");
@@ -119,7 +152,7 @@ namespace util {
     else if ( ftInchPair.first < 0 && ftInchPair.second < 0. ) throw std::runtime_error( prefix+"Cannot have -ft and -in!" );
 
     double inches = ftInchPair.first*12;
-    inches += ::sgn(ftInchPair.first)*ftInchPair.second;
+    inches += sgn(ftInchPair.first)*ftInchPair.second;
     return inches*25.4;
   }
 
@@ -138,7 +171,8 @@ namespace util {
     std::cout.setf( std::cout.left );
     std::cout << " wrt label << " 
               << std::setw(3) << refLabel_ << " >> at a rotation of : " 
-              << std::setw(6) << rotWrtRef_
+              << std::setw(6) << rotWrtRef_ 
+              << " outer: " << isOut_ 
               << std::endl;
   }
 
