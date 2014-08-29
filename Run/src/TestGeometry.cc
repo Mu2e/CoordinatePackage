@@ -40,6 +40,8 @@ using namespace util;
 
 namespace {
 
+  const double dirtGradeAboveFloor = 10363.2;
+
   typedef Coordinate::FtInchPair FtInchPair;
 
   TGeoMaterial* matVacuum;
@@ -50,8 +52,6 @@ namespace {
   
   TGeoVolume* top;
   TGeoRotation* rot;
-
-  bool OGL_;
 
 }
 
@@ -67,10 +67,8 @@ int main(int argc, char* argv[]) {
   gStyle->SetCanvasPreferGL(kTRUE);
 
   // I/O
-  check_argc( argc, { argv[0], "mode" "geometry files", "..." } );
-  const string mode = util::check_argv( argv[1], {"pad","ogl"} );
-  OGL_ = mode.find("ogl") != string::npos;
-  vector<string> args ( argv+2, argv+argc );
+  check_argc( argc, { argv[0], "geometry files", "..." } );
+  vector<string> args ( argv+1, argv+argc );
   
   TApplication theApp("App",&argc,argv);
   runJob( args );
@@ -124,17 +122,9 @@ void runJob( const vector<string>& args ) {
 
   TCanvas c2;
   
-  if ( OGL_ ) {
-    top->Draw("ogl");
-    gPad->WaitPrimitive();
-  }
-  else {
-    top->Draw();
-
-    gPad->GetView()->SetAutoRange();
-  }
-
-  c2.SaveAs("test.eps");
+  top->Draw("ogl");
+  gPad->WaitPrimitive();
+  
 }
 
 //=================================================
@@ -158,8 +148,8 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
   
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
 
-  const double base   = OGL_ ? ccoll.height().at(0) : 0;
-  const double height = OGL_ ? ccoll.height().at(1) : 1;
+  const double base   = ccoll.height().at(0);
+  const double height = ccoll.height().at(1);
 
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
@@ -197,8 +187,8 @@ void constructDirt( CoordinateCollection ccoll ){
 
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
 
-  const double base   = OGL_ ? ccoll.height().at(0) : 0;
-  const double height = OGL_ ? ccoll.height().at(1) : 1;
+  const double base   = ccoll.height().at(0);
+  const double height = ccoll.height().at(1) > dirtGradeAboveFloor ? dirtGradeAboveFloor : ccoll.height().at(1);
 
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
