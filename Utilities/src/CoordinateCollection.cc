@@ -39,7 +39,7 @@ namespace util {
   //=========================================================================
   std::string CoordinateCollection::assignVolName( const std::string& inputString ) {
     if ( inputString.find("VolName)") == std::string::npos ) 
-      throw std::runtime_error("Volume name not specified!  First label must be:\n \"VolName)..a..string..\"");
+      throw std::runtime_error("\nVolume name not specified in file: "+inputFile_+"\nFirst label must be:\n \"VolName)..a..string..\"");
 
     const std::size_t delimPos = inputString.find(")");
     return inputString.substr(delimPos+1, inputString.length() );
@@ -48,7 +48,7 @@ namespace util {
   //=========================================================================
   Coordinate::Rep<double> CoordinateCollection::assignHeight( const std::string& inputString ) {
     if ( inputString.find("Height)") == std::string::npos ) 
-      throw std::runtime_error("Height of collection not specified!  Second label must be:\n \"Height)...,...\"");
+      throw std::runtime_error("\nHeight of solid not specified in file: "+inputFile_+"\nSecond label must be:\n \"Height)...,...\"");
 
     return Coordinate( inputString ).getCoordRel();
   }
