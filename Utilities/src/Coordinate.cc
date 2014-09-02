@@ -84,7 +84,7 @@ namespace util {
     const bool noWallRef   = ( wallLeftDelim == std::string::npos && wallRightDelim == std::string::npos );
     if ( !yesWallRef && !noWallRef ) throw std::runtime_error(" Missing \"[\" or \"]\" for coordinate \""+inputString+"\"");
 
-    if ( yesWallRef) {
+    if ( yesWallRef ) {
       worldBoundary_ = worldDir::stringToEnum( inputString.substr( wallLeftDelim+1, wallRightDelim-wallLeftDelim-1 ) );
     }
 

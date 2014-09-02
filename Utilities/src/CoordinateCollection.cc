@@ -95,8 +95,9 @@ namespace util {
         boundaryList_.push_back( coord );        
       }
     }
-      
+    
     coordList_.push_back( coord );
+
 
   }
 

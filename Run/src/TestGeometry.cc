@@ -56,8 +56,9 @@ namespace {
 }
 
 void runJob(const vector<string>& arguments );
-void constructPolygon( const CoordinateCollection& filename );
-void constructDirt   (       CoordinateCollection  filename );
+void constructPolygon     ( const CoordinateCollection& filename );
+void constructDirtInferred(       CoordinateCollection  filename );
+void constructDirtPolygon (       CoordinateCollection  filename );
 
 //=================================================
 int main(int argc, char* argv[]) {
@@ -111,11 +112,19 @@ void runJob( const vector<string>& args ) {
     ccoll.printSimpleConfigFile( "geom/simpleConfig_"+filename );
     ccoll.printSimpleConfigFileVerbose( "geom/simpleConfig_verbose_"+filename );
     
-    std::cout << " Polygon from file: " << filename << std::endl;
-    constructPolygon( ccoll );
+    // Check for dirt polygon first
+    if ( ccoll.volName().find("DirtPolygon_") != std::string::npos ) {
+      std::cout << " Dirt polygon from file: " << filename << std::endl;  
+      constructDirtPolygon ( ccoll );
+    }
+    else {
+      std::cout << " Polygon from file: " << filename << std::endl;
+      constructPolygon     ( ccoll );
+      
+      std::cout << " Dirt inferred from file: " << filename << std::endl;  
+      constructDirtInferred( ccoll );
+    }
 
-    std::cout << " Dirt    from file: " << filename << std::endl;  
-    constructDirt   ( ccoll );
   }
   gGeoManager->CloseGeometry();
   gGeoManager->SetVisLevel(3);
@@ -162,8 +171,9 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
   top->AddNode( vol, 1, rot );
 
 }
+
 //=================================================
-void constructDirt( CoordinateCollection ccoll ){
+void constructDirtInferred( CoordinateCollection ccoll ){
 
   const bool enoughOuterPoints = CoordinateCollection::hasOuterPoints( ccoll );
   if ( !enoughOuterPoints ) return;
@@ -193,7 +203,42 @@ void constructDirt( CoordinateCollection ccoll ){
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
 
-  vol->SetLineColor(28);
+  vol->SetLineColor(21);
+
+  top->AddNode( vol, 1, rot );
+
+}
+
+//=================================================
+void constructDirtPolygon( CoordinateCollection ccoll ){
+
+  std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
+
+  ccoll.addWorldBoundaries();
+  
+  vector<double> xPos, yPos;
+  unsigned counter(0);
+  for( const auto& coord : ccoll.coordinates() ) {
+    if ( counter != 0 && coord.drawFlag() ) {
+      coord.print();
+      xPos.push_back( coord.x() );
+      yPos.push_back( coord.y() ); 
+    }
+    ++counter;
+  }
+  
+  TGeoVolume* vol = gGeoManager->MakeXtru( ccoll.volName().data(), medAl, 2);
+  TGeoXtru*  poly = (TGeoXtru*)vol->GetShape();
+  
+  poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
+  
+  const double base   = ccoll.height().at(0);
+  const double height = ccoll.height().at(1) > dirtGradeAboveFloor ? dirtGradeAboveFloor : ccoll.height().at(1);
+  
+  poly->DefineSection( 0,base  ,0,0,1 );
+  poly->DefineSection( 1,height,0,0,1 );
+
+  vol->SetLineColor(21);
 
   top->AddNode( vol, 1, rot );
 
