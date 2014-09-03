@@ -1,0 +1,8 @@
+VolName)DirtPolygon_DSarea_downstreamCeiling_vslab3
+Height)18:9,24:6
+*)0,0
+v1)115:8,-28:5
+v2)122:4,-28:5
+v3)<v2>0,25
+v4)<v1>0,25
+
