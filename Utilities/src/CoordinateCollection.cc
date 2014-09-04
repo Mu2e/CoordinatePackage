@@ -87,67 +87,67 @@ namespace util {
     }
 
     // Add coordinate to boundary list
-    if ( coord.worldBoundary() != worldDir::none ) {
-      if ( boundaryList_.size() == 2 ) {
-        throw std::runtime_error("Cannot add coordinate << " +coord.inputString()+ " >> to boundaryList (already full)" );
-      }
-      else { 
-        boundaryList_.push_back( coord );        
-      }
-    }
+    if ( coord.worldBoundary() != worldDir::none ) boundaryList_.push_back( coord );        
     
     coordList_.push_back( coord );
-
 
   }
 
   //============================================
   Coordinate CoordinateCollection::getReferenceCoordinate( const std::string& refLabel ) const {
     
-    auto match  = std::find_if( std::begin( coordList_ ), std::end( coordList_), 
-				[&](const Coordinate& cs){ return cs.label().find( refLabel ) != std::string::npos; } );
-
+    auto match  = std::find_if( std::begin( coordList_ )
+                                ,std::end( coordList_)
+                                ,[&](const Coordinate& cs){ return !cs.label().compare( refLabel ); } );
+    
     if ( match == std::end( coordList_ ) )
       throw std::runtime_error("Reference coordinate << "+refLabel+" >> notFound!");
-
+    
     return *match;    
   }
 
   //============================================
   bool CoordinateCollection::addWorldBoundaries() {
     
-    if ( boundaryList_.size() != 2 ) {
-      std::cout << " No boundary points present " << std::endl;
+    if ( boundaryList_.size() < 2 ) {
+      std::cout << " Not enough boundary points present " << std::endl;
       return false;
     }
 
-    const auto& boundPt1 = boundaryList_.at(0);
-    const auto& boundPt2 = boundaryList_.at(1);
-    
-    checkBoundaryPairForCongruency( boundPt1, boundPt2 );
+    // Check for congruency of points
+    for ( auto point = std::next( boundaryList_.cbegin() ) ; point != boundaryList_.cend() ; ++point ) {
+      checkBoundaryPairForCongruency( *point, *std::prev( point ) );
+    }
 
     // Add wall coordinates
-    std::ostringstream os1; os1 << boundPt1.label() << "_to_" << boundPt1.worldBoundary();
-    std::ostringstream os2; os2 << boundPt2.label() << "_to_" << boundPt2.worldBoundary();
-
-    Coordinate c1 ( getWallCoordinate( boundPt1, os1.str() ) );
-    Coordinate c2 ( getWallCoordinate( boundPt2, os2.str() ) );
-
-    // Inserting in reverse order to agree with handedness of solid
-    // definition
-    //
-    // - Don't want to use std::reverse, as it requires defining an
-    //   operator= for Coordinate class (std::swap is used in
-    //   std::reverse)
-
     std::vector<Coordinate> wallCoords;
-    wallCoords.push_back( c2 );
-    wallCoords.push_back( c1 );
+    for ( const auto& point : boundaryList_ ) {
+      std::ostringstream os; os << point.label() << "_to_" << point.worldBoundary();
+      wallCoords.push_back( getWallCoordinate( point, os.str() ) );
+    }
+    
+    // Reverse wall coordinate list to make consistent with handedness
+    // of polygon definition
+    std::reverse( wallCoords.begin(), wallCoords.end() );
 
-    // Insert corner if necessary
-    if ( boundPt1.worldBoundary() != boundPt2.worldBoundary() ) {
-      Coordinate cinsert ( getCornerCoordinate( boundPt1.worldBoundary(), boundPt2.worldBoundary()) );
-      wallCoords.insert( std::next( wallCoords.begin() ), cinsert );
+    // Insert corners if necessary 
+    // -- need to use reverse iterator since boundaryList is in
+    //    opposite handedness of dirt polygon
+    for ( auto point = std::next( boundaryList_.crbegin() ) ; point != boundaryList_.crend() ; ++point ) {
+
+      const worldDir::enum_type b1 = std::prev( point )->worldBoundary();
+      const worldDir::enum_type b2 = point->worldBoundary();
+
+      if ( b1 != b2 ) {
+        const auto& insertPoint = std::find_if( wallCoords.begin()
+                                                ,wallCoords.end()
+                                                ,[&](Coordinate c){ 
+                                                  return c.worldBoundary() == point->worldBoundary(); 
+                                                } );
+
+        wallCoords.insert( insertPoint, getCornerCoordinate( b1,b2 ) );
+      }
+
     }
 
     std::copy( wallCoords.begin(), 
@@ -281,7 +281,7 @@ namespace util {
     default : throw std::runtime_error("You should never get here!");
     }
     
-    return Coordinate( tmp, label, worldDir::none, true, true );
+    return Coordinate( tmp, label, coord.worldBoundary(), true, true );
   }
   
   //============================================
