@@ -1,0 +1,8 @@
+VolName)DirtPolygon_PSarea_dirtSlab_S
+Height)20,22:5
+*)0,0
+c)[S]-4:2,0
+a)-20:6.125,0
+//B)<a|13.62>-34:3.11,0
+v)[S]<B>0,-1
+
