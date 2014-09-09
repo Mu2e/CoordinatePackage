@@ -40,8 +40,6 @@ using namespace util;
 
 namespace {
 
-  const double dirtGradeAboveFloor = 10363.2;
-
   typedef Coordinate::FtInchPair FtInchPair;
 
   TGeoMaterial* matVacuum;
@@ -200,7 +198,7 @@ void constructDirtInferred( CoordinateCollection ccoll ){
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
 
   const double base   = ccoll.height().at(0);
-  const double height = ccoll.height().at(1) > dirtGradeAboveFloor ? dirtGradeAboveFloor : ccoll.height().at(1);
+  const double height = ccoll.height().at(1);
 
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
@@ -237,7 +235,7 @@ void constructDirtPolygon( CoordinateCollection ccoll ){
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
   
   const double base   = ccoll.height().at(0);
-  const double height = ccoll.height().at(1) > dirtGradeAboveFloor ? dirtGradeAboveFloor : ccoll.height().at(1);
+  const double height = ccoll.height().at(1);
   
   poly->DefineSection( 0,base  ,0,0,1 );
   poly->DefineSection( 1,height,0,0,1 );
