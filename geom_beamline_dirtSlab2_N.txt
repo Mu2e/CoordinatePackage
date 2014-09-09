@@ -2,7 +2,7 @@ VolName)DirtPolygon_Beamline_DirtSlab2_N
 Height)20,24:2
 *)0,0
 h3)[N]<*>-4:2,8
-h4)<h3>4:2,0
+h4)26:2,8
 y)<h4>0,-8:6
 e)<y>17:3,0
 f)<e>0,8:6
