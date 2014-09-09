@@ -109,8 +109,6 @@ void runJob( const vector<string>& args ) {
   // Construct lower-level extruded polygons
   for ( const auto& filename : args ) {
     CoordinateCollection ccoll( filename, worldCorners );
-    ccoll.printSimpleConfigFile( "geom/simpleConfig_"+filename );
-    ccoll.printSimpleConfigFileVerbose( "geom/simpleConfig_verbose_"+filename );
     
     // Check for dirt polygon first
     if ( ccoll.volName().find("DirtPolygon_") != std::string::npos ) {
@@ -140,6 +138,8 @@ void runJob( const vector<string>& args ) {
 void constructPolygon( const CoordinateCollection& ccoll ) {
 
   std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
+
+  ccoll.printSimpleConfigFile( "geom/simpleConfig_"+ccoll.volName()+".txt" );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -181,6 +181,8 @@ void constructDirtInferred( CoordinateCollection ccoll ){
   const bool boundariesAdded   = ccoll.addWorldBoundaries();
   if ( !boundariesAdded ) return;
 
+  ccoll.printSimpleConfigFile( "geom/simpleConfig_dirt_"+ccoll.volName()+".txt", true );
+
   vector<double> xPos, yPos;
   unsigned counter(0);
   for( const auto& coord : ccoll.coordinates() ) {
@@ -216,6 +218,8 @@ void constructDirtPolygon( CoordinateCollection ccoll ){
 
   ccoll.addWorldBoundaries();
   
+  ccoll.printSimpleConfigFile( "geom/simpleConfig_dirt_"+ccoll.volName()+".txt" );
+
   vector<double> xPos, yPos;
   unsigned counter(0);
   for( const auto& coord : ccoll.coordinates() ) {

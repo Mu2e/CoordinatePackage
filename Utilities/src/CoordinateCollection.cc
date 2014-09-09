@@ -160,7 +160,7 @@ namespace util {
 
 
   //============================================
-  void CoordinateCollection::printSimpleConfigFile( std::string const& filename ) const {
+  void CoordinateCollection::printSimpleConfigFile( std::string const& filename, const bool outline ) const {
 
     std::fstream fs;
     fs.open( filename.data(), std::fstream::out );
@@ -169,65 +169,37 @@ namespace util {
     fs << "//" << std::endl;
     fs << "//   " << inputFile_ << std::endl;
     fs << std::endl;
+    fs << "string name = \"" << volName_ << "\";" << std::endl;
+    fs << std::endl;
+    fs << "double building." << volName_ << ".offsetFromMu2eOrigin.x = " << Xoffset << ";" << std::endl;
+    fs << "double building." << volName_ << ".offsetFromMu2eOrigin.y = " << Yoffset << ";" << std::endl;
+    fs << std::endl;
 
+    std::ostringstream xstr;
+    std::ostringstream ystr;
     // make list
-    fs << R"(vector<string> building.)" << volName_ << " = {" << std::endl;
+    xstr << R"(vector<double> building.)" << volName_ << ".xPositions = {" << std::endl;
+    ystr << R"(vector<double> building.)" << volName_ << ".yPositions = {" << std::endl;
     
     for ( std::size_t i(0);  i < coordList_.size() ; ++i ) {
-      fs << "  \"" << coordList_.at(i).inputString() << "\"";
-      if ( i != coordList_.size()-1 ) fs << ",";
-      fs << std::endl;
-      
+      if ( i == 0 || !coordList_.at(i).drawFlag()   ) continue;
+      if ( outline && !coordList_.at(i).isOutline() ) continue;
+      xstr << "  " << coordList_.at(i).x();
+      ystr << "  " << coordList_.at(i).y();
+      if ( i != coordList_.size()-1 ) { xstr << ","; ystr << ","; }
+      xstr << R"(   // )" << coordList_.at(i).label() << std::endl;
+      ystr << R"(   // )" << coordList_.at(i).label() << std::endl;
     }
+    xstr <<  R"(};)" << std::endl;
+    ystr <<  R"(};)" << std::endl;
     
-    fs << R"(};)" << std::endl;
+    
+    fs << xstr.str() 
+       << std::endl
+       << ystr.str() ;
+    
 
     fs << std::endl;
-
-    fs << R"(// Local Variables:)" << std::endl;
-    fs << R"(// mode:c++)"         << std::endl;
-    fs << R"(// End:)"             << std::endl;
-    
-    fs.close();
-
-  }
-
-  //============================================
-  void CoordinateCollection::printSimpleConfigFileVerbose( std::string const& filename ) const {
-
-    std::fstream fs;
-    fs.open( filename.data(), std::fstream::out );
-
-    fs << R"(// SimpleConfig geometry file automatically produced for original file: )" << std::endl;
-    fs << "//" << std::endl;
-    fs << "//   " << inputFile_ << std::endl;
-    fs << std::endl;
-
-    // make list
-    fs << R"(vector<double> building.)" << volName_ << ".xPositions = {" << std::endl;
-    
-    for ( std::size_t i(0);  i < coordList_.size() ; ++i ) {
-      fs << "  " << coordList_.at(i).x();
-      if ( i != coordList_.size()-1 ) fs << ",";
-      fs << std::endl;
-      
-    }
-    
-    fs << R"(};)" << std::endl;
-
-    fs << std::endl;
-
-    fs << R"(vector<double> building.)" << volName_ << ".yPositions = {" << std::endl;
-    
-    for ( std::size_t i(0);  i < coordList_.size() ; ++i ) {
-      fs << "  " << coordList_.at(i).y();
-      if ( i != coordList_.size()-1 ) fs << ",";
-      fs << std::endl;
-      
-    }
-    
-    fs << R"(};)" << std::endl;
-
     fs << R"(// Local Variables:)" << std::endl;
     fs << R"(// mode:c++)"         << std::endl;
     fs << R"(// End:)"             << std::endl;
