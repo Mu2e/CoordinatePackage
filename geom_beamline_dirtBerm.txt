@@ -1,4 +1,4 @@
-VolName)DirtPolygon_BeamlineDirtBerm
+VolName)dirt.beamline.berm
 Height)25:6,33:8
 *)0,0
 a)[W]<*>-4:2,-25:9.5

@@ -1,4 +1,4 @@
-VolName)DirtPolygon_Island_Upper
+VolName)dirt.island.upper
 Height)8:6,19:4
 *)0,0
 D)[E]<*>69:5,8:7

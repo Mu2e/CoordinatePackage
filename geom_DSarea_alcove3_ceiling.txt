@@ -1,4 +1,4 @@
-VolName)DSarea_alcove3_ceiling
+VolName)dsArea.alcove3.ceiling
 Height)10,11:4
 *)0,0
 M)124:1,-3:5

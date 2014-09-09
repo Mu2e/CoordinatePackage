@@ -109,7 +109,7 @@ void runJob( const vector<string>& args ) {
     CoordinateCollection ccoll( filename, worldCorners );
     
     // Check for dirt polygon first
-    if ( ccoll.volName().find("DirtPolygon_") != std::string::npos ) {
+    if ( ccoll.volName().find("dirt.") != std::string::npos ) {
       std::cout << " Dirt polygon from file: " << filename << std::endl;  
       constructDirtPolygon ( ccoll );
     }

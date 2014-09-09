@@ -1,4 +1,4 @@
-VolName)Beamline_Ceiling
+VolName)beamline.ceiling
 Height)17,19:4
 *)0,0
 H3)22,8

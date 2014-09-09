@@ -1,4 +1,4 @@
-VolName)DirtPolygon_DSarea_alcove1
+VolName)dirt.dsArea.alcove1
 Height)11:4,19:4
 *)0,0
 H)95:5,-1:5

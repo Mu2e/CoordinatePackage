@@ -1,4 +1,4 @@
-VolName)DirtPolygon_Beamline_DirtSlab
+VolName)dirt.beamline.slab
 Height)19:4,20
 *)0,0
 //i0)<*>-13:11,19:4
