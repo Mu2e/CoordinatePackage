@@ -169,20 +169,21 @@ namespace util {
     typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
     boost::char_separator<char> sep(".");
     tokenizer tokens(volName_, sep);
-    int tokenCounter(0);
 
     std::string name;
+    int tokenCounter(0);
     for ( auto& token : tokens ) {
       // Capitalize first letter
       std::string tmp (token); // need to form a temporary since token iterators are const.
-      if ( tokenCounter ) tmp[0] = std::toupper( tmp[0] );
+      if ( tokenCounter ) tmp[0] = std::toupper( tmp[0] ); 
       ++tokenCounter;
       name += tmp;
     }
 
+    const std::string filename = dir+name+".txt";
 
     std::fstream fs;
-    fs.open( std::string(dir+"/"+name+".txt").data(), std::fstream::out );
+    fs.open( filename.data(), std::fstream::out );
 
     const std::string varprefix = (volName_.find("dirt.") != std::string::npos ) ? volName_ : "building."+volName_;
     const std::string material  = (volName_.find("dirt.") != std::string ::npos) ? "MBOverburden" : "CONCRETE_MARS";
@@ -192,6 +193,7 @@ namespace util {
     fs << "//   " << inputFile_ << std::endl;
     fs << std::endl;
 
+    std::cout << "    Filename: " << filename << " name: " << name << std::endl;
 
     fs << "string " << varprefix << ".name     = \"" << name << "\";" << std::endl;
     fs << std::endl;

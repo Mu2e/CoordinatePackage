@@ -131,6 +131,8 @@ void runJob( const vector<string>& args ) {
   for ( const auto& filename : args ) {
     CoordinateCollection ccoll( filename, worldCorners );
     
+    std::cout << endl << filename << std::endl;
+
     // Check for dirt polygon first
     if ( ccoll.volName().find("dirt.") != std::string::npos ) {
       if ( verbose_ ) std::cout << " Dirt polygon from file: " << filename << std::endl;  
@@ -166,6 +168,7 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
 
   if (verbose_) std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
+  std::cout << __func__ << " " << ccoll.volName() << std::endl;
   ccoll.printSimpleConfigFile( "output/" );
 
   vector<double> xPos, yPos;
@@ -212,7 +215,10 @@ void constructDirtInferred( CoordinateCollection ccoll ){
 
   if (verbose_ ) std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
-  ccoll.printSimpleConfigFile( "output/dirt", true );
+  ccoll.setName( "dirt."+ccoll.volName() );
+
+  std::cout << __func__ << " " << ccoll.volName() << std::endl;
+  ccoll.printSimpleConfigFile( "output/", true );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -251,6 +257,7 @@ void constructDirtPolygon( CoordinateCollection ccoll ){
 
   ccoll.addWorldBoundaries( verbose_ );
   
+  std::cout << __func__ << " " << ccoll.volName() << std::endl;
   ccoll.printSimpleConfigFile( "output/" );
 
   vector<double> xPos, yPos;

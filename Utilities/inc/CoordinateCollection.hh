@@ -40,6 +40,7 @@ namespace util {
 
     void printSimpleConfigFile( std::string const & dir, const bool outline = false ) const;
 
+    void setName( const std::string& name ) { volName_ = name; }
     bool addWorldBoundaries(const bool verbose = false );
     
     static bool hasOuterPoints( const CoordinateCollection& ccoll );
