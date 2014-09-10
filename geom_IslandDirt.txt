@@ -1,4 +1,4 @@
-VolName)DirtPolygon_Island
+VolName)dirt.island
 Height)0:-6,8:6
 *)0,0
 //S)53:5,7:7

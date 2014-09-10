@@ -1,4 +1,4 @@
-VolName)floorPassage
+VolName)floor.passage
 Height)0:-6,0
 *)0,0
 S)53:5,7:7

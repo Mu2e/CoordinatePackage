@@ -1,4 +1,4 @@
-VolName)DSelevator_upper
+VolName)dsArea.elevator.upper
 Height)11:4,24:2
 *)0,0
 U0)95:5,-30:5

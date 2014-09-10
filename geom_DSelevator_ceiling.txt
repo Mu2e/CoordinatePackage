@@ -1,4 +1,4 @@
-VolName)DSelevator_ceiling
+VolName)dsArea.elevator.ceiling
 Height)10,11:4
 *)0,0
 Y)98:1,-28:5

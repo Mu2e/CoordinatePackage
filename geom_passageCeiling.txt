@@ -1,4 +1,4 @@
-VolName)PassageCeiling
+VolName)passage.ceiling
 Height)7:6,8:6
 *)69:5,-3:5
 A1)0,0

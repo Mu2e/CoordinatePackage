@@ -1,4 +1,4 @@
-VolName)DirtPolygon_DSwall_upper
+VolName)dirt.dsArea.upper
 Height)11:4,24:2
 *)0,0
 //E6)122:2.5,-28:5
