@@ -1,4 +1,4 @@
-VolName)DirtPolygon_PSarea_dirtSlab2_N
+VolName)dirt.psArea.dirtSlab2.N
 Height)22:5,23:11
 *)0,0
 c)[N]<*>-4:2,0

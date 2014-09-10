@@ -1,4 +1,4 @@
-VolName)PSarea_upperExtension_S
+VolName)psArea.upper.S
 Height)14:5,20
 *)0,0
 C)-4:2,0

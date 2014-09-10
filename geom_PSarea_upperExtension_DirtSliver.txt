@@ -1,4 +1,4 @@
-VolName)DirtPolygon_psWall_upper_dirtSliver
+VolName)dirt.psWall.upper.sliver
 Height)10:11,14:5
 //*)0,0
 //P0)-4:2,0

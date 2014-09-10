@@ -13,5 +13,7 @@ export PATH=${PWD}:$PATH
 mkdir -p Run/bin/ 
 mkdir -p Run/obj/
 mkdir -p Utilities/obj/
+mkdir -p geom
+mkdir -p output
 
 export PATH=Run/bin/:$PATH

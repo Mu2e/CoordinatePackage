@@ -1,4 +1,4 @@
-VolName)psWall
+VolName)psArea
 Height)0:-6,2:9.75
 *)0,0
 P0)-4:2,0
