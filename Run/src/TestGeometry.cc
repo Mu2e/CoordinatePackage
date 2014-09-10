@@ -163,7 +163,7 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
 
   if      ( ccoll.volName().find("oundation") != std::string::npos || 
             ccoll.volName().find("rench")     != std::string::npos ) vol->SetLineColor(kGray);
-  else if ( ccoll.volName().find("floor")     != std::string::npos ) vol->SetLineColor(28);
+  else if ( ccoll.volName().find("floor.")    != std::string::npos ) vol->SetLineColor(28);
   else vol->SetLineColor(45);
 
   top->AddNode( vol, 1, rot );
