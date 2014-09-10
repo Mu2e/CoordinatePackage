@@ -29,6 +29,10 @@
 #include "TTree.h"
 #include "TView.h"
 
+// BOOST options - silence unused local typedefs warnings
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#include "boost/program_options.hpp"
+
 // Utilities
 #include "Utilities/inc/HelperFunctions.hh"
 #include "Utilities/inc/Coordinate.hh"
@@ -38,9 +42,9 @@
 using namespace std;
 using namespace util;
 
-namespace {
+namespace po = boost::program_options;
 
-  typedef Coordinate::FtInchPair FtInchPair;
+namespace {
 
   TGeoMaterial* matVacuum;
   TGeoMaterial* matAl;
@@ -50,6 +54,8 @@ namespace {
   
   TGeoVolume* top;
   TGeoRotation* rot;
+
+  bool draw_ = false;
 
 }
 
@@ -65,13 +71,26 @@ int main(int argc, char* argv[]) {
   gStyle->SetOptStat(kFALSE);
   gStyle->SetCanvasPreferGL(kTRUE);
 
-  // I/O
-  check_argc( argc, { argv[0], "geometry files", "..." } );
-  vector<string> args ( argv+1, argv+argc );
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
+    ("draw", po::value<bool>()->default_value(false), "draw flag [default is false]")
+    ;
+  
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);    
+
+  int optionCounter(0);
+  if (vm.count("help")) { ++optionCounter; cout << desc << "\n"; return 1; }
+  if (vm.count("draw")) { ++optionCounter; draw_ = vm["draw"].as<bool>();  } 
+
+  // I/O to get .ccl files
+  vector<string> args ( argv+1+optionCounter, argv+argc );
   
   TApplication theApp("App",&argc,argv);
   runJob( args );
-  theApp.Run();
 
 }
 
@@ -122,13 +141,16 @@ void runJob( const vector<string>& args ) {
     }
 
   }
-  gGeoManager->CloseGeometry();
-  gGeoManager->SetVisLevel(3);
 
-  TCanvas c2;
-  
-  top->Draw("ogl");
-  gPad->WaitPrimitive();
+  if ( draw_ ) {
+    gGeoManager->CloseGeometry();
+    gGeoManager->SetVisLevel(3);
+    
+    TCanvas c2;
+    
+    top->Draw("ogl");
+    gPad->WaitPrimitive();
+  }
   
 }
 
@@ -137,7 +159,7 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
 
   std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
-  ccoll.printSimpleConfigFile( "geom/simpleConfig_"+ccoll.volName()+".txt" );
+  ccoll.printSimpleConfigFile( "output/"+ccoll.volName()+".txt" );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -179,7 +201,7 @@ void constructDirtInferred( CoordinateCollection ccoll ){
   const bool boundariesAdded   = ccoll.addWorldBoundaries();
   if ( !boundariesAdded ) return;
 
-  ccoll.printSimpleConfigFile( "geom/simpleConfig_dirt_"+ccoll.volName()+".txt", true );
+  ccoll.printSimpleConfigFile( "output/dirt_"+ccoll.volName()+".txt", true );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -192,7 +214,7 @@ void constructDirtInferred( CoordinateCollection ccoll ){
     ++counter;
   }
   
-  TGeoVolume* vol = gGeoManager->MakeXtru( TString(ccoll.volName()+"_dirt"), medAl, 2);
+  TGeoVolume* vol = gGeoManager->MakeXtru( TString(ccoll.volName()+"Dirt"), medAl, 2);
   TGeoXtru*  poly = (TGeoXtru*)vol->GetShape();
 
   poly->DefinePolygon( xPos.size(), &xPos.front(), &yPos.front() );
@@ -216,7 +238,7 @@ void constructDirtPolygon( CoordinateCollection ccoll ){
 
   ccoll.addWorldBoundaries();
   
-  ccoll.printSimpleConfigFile( "geom/simpleConfig_dirt_"+ccoll.volName()+".txt" );
+  ccoll.printSimpleConfigFile( "output/dirt_"+ccoll.volName()+".txt" );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
