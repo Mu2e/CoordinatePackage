@@ -1,4 +1,4 @@
-VolName)DirtPolygon_TSrWall_Alcove
+VolName)dirt.tsArea.alcove
 Height)18,24:6
 *)0,0
 //hFar)-2,-35:4

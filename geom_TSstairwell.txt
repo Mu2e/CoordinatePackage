@@ -1,4 +1,4 @@
-VolName)TSstairwell
+VolName)tsArea.stairwell
 Height)0:-6,8:6
 *)0,0
 S0)12:5,-28:5

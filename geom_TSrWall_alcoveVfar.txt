@@ -1,4 +1,4 @@
-VolName)TSrWall_alcoveVfar
+VolName)tsArea.alcove.vertical.S
 Height)18,24:6
 *)0,0
 h)-2,-35:4

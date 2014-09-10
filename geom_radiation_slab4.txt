@@ -1,4 +1,4 @@
-VolName)Radiation_Slab4
+VolName)radiation.slab4
 Height)34:6,36
 *)0,0
 //A)-4:2,2
