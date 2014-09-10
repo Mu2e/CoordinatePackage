@@ -38,14 +38,14 @@ namespace util {
       return worldCorners_.find(i)->second; 
     }
 
-    void printSimpleConfigFile( std::string const & filename, const bool outline = false ) const;
+    void printSimpleConfigFile( std::string const & dir, const bool outline = false ) const;
 
-    bool addWorldBoundaries();
+    bool addWorldBoundaries(const bool verbose = false );
     
     static bool hasOuterPoints( const CoordinateCollection& ccoll );
 
     // These static members indicate the offset of the volume origin
-    // from the mu2e origin.
+    // wrt the mu2e origin.
     static constexpr double Xoffset = -3581.40;
     static constexpr double Yoffset =   947.40;
 

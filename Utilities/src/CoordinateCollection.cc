@@ -8,10 +8,13 @@
 #include "Utilities/inc/Table.hh"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+
+#include "boost/tokenizer.hpp"
 
 using namespace worldDir;
 
@@ -107,10 +110,10 @@ namespace util {
   }
 
   //============================================
-  bool CoordinateCollection::addWorldBoundaries() {
+  bool CoordinateCollection::addWorldBoundaries( const bool verbose ) {
     
     if ( boundaryList_.size() < 2 ) {
-      std::cout << " Not enough boundary points present " << std::endl;
+      if ( verbose ) std::cout << " Not enough boundary points present " << std::endl;
       return false;
     }
 
@@ -160,26 +163,49 @@ namespace util {
 
 
   //============================================
-  void CoordinateCollection::printSimpleConfigFile( std::string const& filename, const bool outline ) const {
+  void CoordinateCollection::printSimpleConfigFile( const std::string& dir, const bool outline ) const {
+
+    // Tokenize
+    typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+    boost::char_separator<char> sep(".");
+    tokenizer tokens(volName_, sep);
+    int tokenCounter(0);
+
+    std::string name;
+    for ( auto& token : tokens ) {
+      // Capitalize first letter
+      std::string tmp (token); // need to form a temporary since token iterators are const.
+      if ( tokenCounter ) tmp[0] = std::toupper( tmp[0] );
+      ++tokenCounter;
+      name += tmp;
+    }
+
 
     std::fstream fs;
-    fs.open( filename.data(), std::fstream::out );
+    fs.open( std::string(dir+"/"+name+".txt").data(), std::fstream::out );
+
+    const std::string varprefix = (volName_.find("dirt.") != std::string::npos ) ? volName_ : "building."+volName_;
+    const std::string material  = (volName_.find("dirt.") != std::string ::npos) ? "MBOverburden" : "CONCRETE_MARS";
 
     fs << R"(// SimpleConfig geometry file automatically produced for original file: )" << std::endl;
     fs << "//" << std::endl;
     fs << "//   " << inputFile_ << std::endl;
     fs << std::endl;
-    fs << "string name = \"" << volName_ << "\";" << std::endl;
+
+
+    fs << "string " << varprefix << ".name     = \"" << name << "\";" << std::endl;
     fs << std::endl;
-    fs << "double building." << volName_ << ".offsetFromMu2eOrigin.x = " << Xoffset << ";" << std::endl;
-    fs << "double building." << volName_ << ".offsetFromMu2eOrigin.y = " << Yoffset << ";" << std::endl;
+    fs << "string " << varprefix << ".material = \"" << material << "\";" << std::endl;
+    fs << std::endl;
+    fs << "double " << varprefix << ".offsetFromMu2eOrigin.x = " << Xoffset << ";" << std::endl;
+    fs << "double " << varprefix << ".offsetFromMu2eOrigin.y = " << Yoffset << ";" << std::endl;
     fs << std::endl;
 
     std::ostringstream xstr;
     std::ostringstream ystr;
     // make list
-    xstr << R"(vector<double> building.)" << volName_ << ".xPositions = {" << std::endl;
-    ystr << R"(vector<double> building.)" << volName_ << ".yPositions = {" << std::endl;
+    xstr << R"(vector<double> )" << varprefix << ".xPositions = {" << std::endl;
+    ystr << R"(vector<double> )" << varprefix << ".yPositions = {" << std::endl;
     
     for ( std::size_t i(0);  i < coordList_.size() ; ++i ) {
       if ( i == 0 || !coordList_.at(i).drawFlag()   ) continue;

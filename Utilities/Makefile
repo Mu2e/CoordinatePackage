@@ -11,7 +11,7 @@ OBJS=splitLine.o Coordinate.o CoordinateCollection.o HelperFunctions.o
 all: $(OBJS)
 
 %.o : $(SRCDIR)/%.cc 
-	$(CC) $(CFLAGS) -I$(BASE_RELEASE) -c `root-config --glibs --cflags` $^
+	$(CC) $(CFLAGS) -I$(BASE_RELEASE) -c `root-config --glibs --cflags` -I$(BOOST_INC) $^
 	@mv $@ $(OBJDIR)/
 
 .PHONY: clean
