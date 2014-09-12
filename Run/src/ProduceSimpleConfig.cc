@@ -40,6 +40,7 @@ namespace po = boost::program_options;
 #include "Utilities/inc/Coordinate.hh"
 #include "Utilities/inc/CoordinateCollection.hh"
 #include "Utilities/inc/Table.hh"
+#include "Utilities/inc/Config.hh"
 using namespace util;
 
 
@@ -56,6 +57,8 @@ namespace {
 
   bool draw_    = false;
   bool verbose_ = false;
+
+  Config masterConfig;
 
 }
 
@@ -126,13 +129,10 @@ void runJob( const vector<string>& args ) {
     gGeoManager->SetTopVolume(top);
   }
   
-
   // Construct lower-level extruded polygons
   for ( const auto& filename : args ) {
     CoordinateCollection ccoll( filename, worldCorners );
     
-    std::cout << endl << filename << std::endl;
-
     // Check for dirt polygon first
     if ( ccoll.volName().find("dirt.") != std::string::npos ) {
       if ( verbose_ ) std::cout << " Dirt polygon from file: " << filename << std::endl;  
@@ -147,6 +147,45 @@ void runJob( const vector<string>& args ) {
     }
 
   }
+
+  // Sort master-config lists
+  std::sort( masterConfig.bldgFiles.begin()   , masterConfig.bldgFiles.end()    );
+  std::sort( masterConfig.dirtFiles.begin()   , masterConfig.dirtFiles.end()    );
+  std::sort( masterConfig.bldgPrefixes.begin(), masterConfig.bldgPrefixes.end() );
+  std::sort( masterConfig.dirtPrefixes.begin(), masterConfig.dirtPrefixes.end() );
+
+  // Print master config file
+  fstream mf;
+  mf.open( "output/mu2eBuilding.txt", fstream::out );
+  mf << "// Automatically produced by ProduceSimpleConfig\n\n";
+  mf << "// This defines the vertical position of the hall air volume\n";
+  mf << "double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')\n\n";
+  for( const auto& line : masterConfig.bldgFiles ) mf << line << "\n";
+  mf << std::endl;
+  mf << "vector<string> bldg.prefix.list = {\n" ;
+  std::size_t i(0);
+  for ( const auto& prefix : masterConfig.bldgPrefixes ) {
+    mf << "  \"" << prefix << "\"";
+    if ( i != masterConfig.bldgPrefixes.size()-1 ) mf << ",";
+    mf << std::endl;
+    ++i;
+  }
+  mf << "};\n\n";
+  for( const auto& line : masterConfig.dirtFiles ) mf << line << "\n";
+  mf << std::endl;
+  mf << "vector<string> dirt.prefix.list = {\n" ;
+  i=0;
+  for ( const auto& prefix : masterConfig.dirtPrefixes ) {
+    mf << "  \"" << prefix << "\"";
+    if ( i != masterConfig.dirtPrefixes.size()-1 ) mf << ",";
+    mf << std::endl;
+    ++i;
+  }
+  mf << "};\n\n";
+  mf << R"(// Local Variables:)" << std::endl;
+  mf << R"(// mode:c++)"         << std::endl;
+  mf << R"(// End:)"             << std::endl;
+  mf.close();
 
   if ( !draw_ ) return;
   
@@ -168,8 +207,7 @@ void constructPolygon( const CoordinateCollection& ccoll ) {
 
   if (verbose_) std::cout << " Height: " << ccoll.height().at(0) << " to " << ccoll.height().at(1) << std::endl;
 
-  std::cout << __func__ << " " << ccoll.volName() << std::endl;
-  ccoll.printSimpleConfigFile( "output/" );
+  ccoll.printSimpleConfigFile( masterConfig, "output/" );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -217,8 +255,7 @@ void constructDirtInferred( CoordinateCollection ccoll ){
 
   ccoll.setName( "dirt."+ccoll.volName() );
 
-  std::cout << __func__ << " " << ccoll.volName() << std::endl;
-  ccoll.printSimpleConfigFile( "output/", true );
+  ccoll.printSimpleConfigFile( masterConfig, "output/", true );
 
   vector<double> xPos, yPos;
   unsigned counter(0);
@@ -257,8 +294,7 @@ void constructDirtPolygon( CoordinateCollection ccoll ){
 
   ccoll.addWorldBoundaries( verbose_ );
   
-  std::cout << __func__ << " " << ccoll.volName() << std::endl;
-  ccoll.printSimpleConfigFile( "output/" );
+  ccoll.printSimpleConfigFile( masterConfig, "output/" );
 
   vector<double> xPos, yPos;
   unsigned counter(0);

@@ -4,6 +4,7 @@
 //
 // Original author: Kyle Knoepfel
 
+#include "Utilities/inc/Config.hh"
 #include "Utilities/inc/CoordinateCollection.hh"
 #include "Utilities/inc/Table.hh"
 
@@ -17,6 +18,36 @@
 #include "boost/tokenizer.hpp"
 
 using namespace worldDir;
+
+namespace {
+
+  bool hasDirt( std::string str ) {
+    return str.find("dirt.") != std::string::npos;
+  }
+
+  void replacementStream( std::ostringstream& os, 
+                          const std::string& varprefix, 
+                          const std::vector<std::size_t>& v ) {
+    if ( !v.empty() ) {
+      os << "vector<int>    " << varprefix << "replace   = { ";
+      std::size_t counter(0);
+      for ( std::size_t index : v ) {
+
+        if ( counter != v.size()-1 ) {
+          os << index << ", ";
+        }
+        else {
+          os << index << " }; " ;
+          os << std::endl;
+        }
+
+        ++counter;
+      }
+    }
+  }
+
+}
+
 
 namespace util {
   
@@ -163,7 +194,7 @@ namespace util {
 
 
   //============================================
-  void CoordinateCollection::printSimpleConfigFile( const std::string& dir, const bool outline ) const {
+  void CoordinateCollection::printSimpleConfigFile( Config& config, const std::string& dir, const bool outline ) const {
 
     // Tokenize
     typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
@@ -180,28 +211,41 @@ namespace util {
       name += tmp;
     }
 
-    const std::string filename = dir+name+".txt";
+    const std::string filename  = dir+name+".txt";
+    const std::string includefilename = "Mu2eG4/geom/bldg/"+name+".txt";
+    const std::string varprefix = hasDirt( volName_ ) ? volName_ : "building."+volName_;
+    const std::string material  = hasDirt( volName_ ) ? "MBOverburden" : "CONCRETE_MARS";
+
+    // Fill master config
+    auto& fileList   = hasDirt( volName_ ) ? config.dirtFiles    : config.bldgFiles;
+    auto& prefixList = hasDirt( volName_ ) ? config.dirtPrefixes : config.bldgPrefixes;
+
+    fileList  .push_back( "#include \""+includefilename+"\"" );
+    prefixList.push_back( varprefix );
 
     std::fstream fs;
     fs.open( filename.data(), std::fstream::out );
 
-    const std::string varprefix = (volName_.find("dirt.") != std::string::npos ) ? volName_ : "building."+volName_;
-    const std::string material  = (volName_.find("dirt.") != std::string ::npos) ? "MBOverburden" : "CONCRETE_MARS";
+    const double yHalfThickness = 0.5*(height_.at(1)-height_.at(0));
+    const double yOffset        = height_.at(0) + yHalfThickness;
 
     fs << R"(// SimpleConfig geometry file automatically produced for original file: )" << std::endl;
     fs << "//" << std::endl;
     fs << "//   " << inputFile_ << std::endl;
     fs << std::endl;
-
-    std::cout << "    Filename: " << filename << " name: " << name << std::endl;
-
     fs << "string " << varprefix << ".name     = \"" << name << "\";" << std::endl;
     fs << std::endl;
     fs << "string " << varprefix << ".material = \"" << material << "\";" << std::endl;
     fs << std::endl;
-    fs << "double " << varprefix << ".offsetFromMu2eOrigin.x = " << Xoffset << ";" << std::endl;
-    fs << "double " << varprefix << ".offsetFromMu2eOrigin.y = " << Yoffset << ";" << std::endl;
+    fs << "double " << varprefix << ".offsetFromMu2eOrigin.x   = " << Xoffset << ";" << std::endl;
+    fs << "double " << varprefix << ".offsetFromFloorSurface.y = " << yOffset << ";" << std::endl;
+    fs << "double " << varprefix << ".offsetFromMu2eOrigin.z   = " << Zoffset << ";" << std::endl;
     fs << std::endl;
+    fs << "double " << varprefix << ".yHalfThickness           = " << yHalfThickness << ";" << std::endl;
+    fs << std::endl;
+
+    std::vector<std::size_t> xReplaceV;
+    std::vector<std::size_t> yReplaceV;
 
     std::ostringstream xstr;
     std::ostringstream ystr;
@@ -209,23 +253,52 @@ namespace util {
     xstr << R"(vector<double> )" << varprefix << ".xPositions = {" << std::endl;
     ystr << R"(vector<double> )" << varprefix << ".yPositions = {" << std::endl;
     
-    for ( std::size_t i(0);  i < coordList_.size() ; ++i ) {
-      if ( i == 0 || !coordList_.at(i).drawFlag()   ) continue;
-      if ( outline && !coordList_.at(i).isOutline() ) continue;
-      xstr << "  " << coordList_.at(i).x();
-      ystr << "  " << coordList_.at(i).y();
+    std::size_t indexCounter(0);
+    for ( std::size_t i(0) ;  i < coordList_.size() ; ++i ) {
+      const auto& coord = coordList_.at(i);
+
+      if ( i == 0 || !coord.drawFlag()   ) continue;
+      if ( outline && !coord.isOutline() ) continue;
+
+      xstr << "  " << coord.x();
+      ystr << "  " << coord.y();
       if ( i != coordList_.size()-1 ) { xstr << ","; ystr << ","; }
-      xstr << R"(   // )" << coordList_.at(i).label() << std::endl;
-      ystr << R"(   // )" << coordList_.at(i).label() << std::endl;
+      xstr << R"(   // )" << coord.label() << std::endl;
+      ystr << R"(   // )" << coord.label() << std::endl;
+
+      // Determine replacement for actual Mu2e world boundaries
+      if ( coord.label().find("corner") != std::string::npos ) {
+        xReplaceV.push_back( indexCounter );
+        yReplaceV.push_back( indexCounter );
+      }
+      if ( coord.label().find("_to_2")  != std::string::npos ||
+           coord.label().find("_to_6")  != std::string::npos ) {
+        yReplaceV.push_back( indexCounter );
+      }
+      if ( coord.label().find("_to_4")  != std::string::npos ||
+           coord.label().find("_to_8")  != std::string::npos ) {
+        xReplaceV.push_back( indexCounter );
+      }
+
+      ++indexCounter;
     }
     xstr <<  R"(};)" << std::endl;
     ystr <<  R"(};)" << std::endl;
     
+    // Having trouble getting the move semantics to work for
+    // ostringstream (perhaps it's still a bug in the compiler?), so
+    // passing the oss by reference.
+
+    std::ostringstream xReplaceOS; replacementStream( xReplaceOS, varprefix+".x", xReplaceV );
+    std::ostringstream yReplaceOS; replacementStream( yReplaceOS, varprefix+".y", yReplaceV );
+
+    fs << xReplaceOS.str();
+    fs << xstr.str() ;
+
+    fs << std::endl;
     
-    fs << xstr.str() 
-       << std::endl
-       << ystr.str() ;
-    
+    fs << yReplaceOS.str();
+    fs << ystr.str() ;
 
     fs << std::endl;
     fs << R"(// Local Variables:)" << std::endl;

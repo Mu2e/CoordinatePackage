@@ -18,7 +18,9 @@
 #include <vector>
 
 namespace util {
-  
+
+  class Config;
+
   class CoordinateCollection {
     
   public:
@@ -38,7 +40,7 @@ namespace util {
       return worldCorners_.find(i)->second; 
     }
 
-    void printSimpleConfigFile( std::string const & dir, const bool outline = false ) const;
+    void printSimpleConfigFile( Config& config, std::string const & dir, const bool outline = false ) const;
 
     void setName( const std::string& name ) { volName_ = name; }
     bool addWorldBoundaries(const bool verbose = false );
@@ -47,8 +49,8 @@ namespace util {
 
     // These static members indicate the offset of the volume origin
     // wrt the mu2e origin.
-    static constexpr double Xoffset = -3581.40;
-    static constexpr double Yoffset =   947.40;
+    static constexpr double Xoffset =   947.40;
+    static constexpr double Zoffset = -3581.40;
 
   private:
     
