@@ -156,7 +156,7 @@ namespace util {
     // Add wall coordinates
     std::vector<Coordinate> wallCoords;
     for ( const auto& point : boundaryList_ ) {
-      std::ostringstream os; os << point.label() << "_to_" << point.worldBoundary();
+      std::ostringstream os; os << point.label() << "_to_" << worldDir::enumToString( point.worldBoundary() );
       wallCoords.push_back( getWallCoordinate( point, os.str() ) );
     }
     

@@ -12,6 +12,7 @@
 // C++ includes
 #include <array>
 #include <iostream>
+#include <sstream>
 #include <utility>
 
 namespace worldDir {
@@ -49,6 +50,28 @@ namespace worldDir {
     }
     
     return type;
+  }
+
+  inline std::string enumToString( const enum_type et ) {
+
+    std::ostringstream ss; ss << et;
+
+    if ( et%2 == 1 ) 
+      throw std::runtime_error("Wall enum << " +ss.str()+ " >> is not supported!");
+    
+    std::string type;
+
+    switch( et ) {
+    case N : type = "N"; break;
+    case E : type = "E"; break;
+    case S : type = "S"; break;
+    case W : type = "W"; break;
+    default: 
+      throw std::runtime_error("Wall enum << " +ss.str()+ " >> not supported!");
+    }
+    
+    return type;
+    
   }
 
 }
