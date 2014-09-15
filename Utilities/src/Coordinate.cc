@@ -79,20 +79,21 @@ namespace util {
     if ( inputString.find(",") == std::string::npos ) 
       throw std::runtime_error("Label << "+label_+" >> has no ordered pair!  You probably forgot the ',' character." ); 
 
-    // Get wall reference
-    const bool yesWallRef  = ( wallLeftDelim != std::string::npos && wallRightDelim != std::string::npos );
-    const bool noWallRef   = ( wallLeftDelim == std::string::npos && wallRightDelim == std::string::npos );
-    if ( !yesWallRef && !noWallRef ) throw std::runtime_error(" Missing \"[\" or \"]\" for coordinate \""+inputString+"\"");
-
-    if ( yesWallRef ) {
-      worldBoundary_ = worldDir::stringToEnum( inputString.substr( wallLeftDelim+1, wallRightDelim-wallLeftDelim-1 ) );
-    }
-
     // Get origin reference
     const bool newOrigin = ( refLeftDelim != std::string::npos && refRightDelim != std::string::npos );
     const bool oldOrigin = ( refLeftDelim == std::string::npos && refRightDelim == std::string::npos );
     if ( !newOrigin && !oldOrigin ) throw std::runtime_error(" Missing \"<\" or \">\" for coordinate \""+inputString+"\"");
     
+    // Get wall reference
+    const bool yesWallRef  = ( wallLeftDelim != std::string::npos && wallRightDelim != std::string::npos );
+    const bool noWallRef   = ( wallLeftDelim == std::string::npos && wallRightDelim == std::string::npos );
+    if ( !yesWallRef && !noWallRef ) throw std::runtime_error(" Missing \"[\" or \"]\" for coordinate \""+inputString+"\"");
+    if (  yesWallRef && !newOrigin ) throw std::runtime_error(" Must specify reference point \"<something_here>\" when adding wall reference! (for "+inputString+")\n");
+
+    if ( yesWallRef ) {
+      worldBoundary_ = worldDir::stringToEnum( inputString.substr( wallLeftDelim+1, wallRightDelim-wallLeftDelim-1 ) );
+    }
+
     // Check for rotation
     const bool newRotation = ( rotDelim != std::string::npos ) && (refRightDelim-rotDelim-1 != 0);
 
