@@ -271,12 +271,12 @@ namespace util {
         xReplaceV.push_back( indexCounter );
         yReplaceV.push_back( indexCounter );
       }
-      if ( coord.label().find("_to_2")  != std::string::npos ||
-           coord.label().find("_to_6")  != std::string::npos ) {
+      if ( coord.label().find("_to_N")  != std::string::npos ||
+           coord.label().find("_to_S")  != std::string::npos ) {
         yReplaceV.push_back( indexCounter );
       }
-      if ( coord.label().find("_to_4")  != std::string::npos ||
-           coord.label().find("_to_8")  != std::string::npos ) {
+      if ( coord.label().find("_to_E")  != std::string::npos ||
+           coord.label().find("_to_W")  != std::string::npos ) {
         xReplaceV.push_back( indexCounter );
       }
 
