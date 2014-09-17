@@ -7,7 +7,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-using namespace std;
 
 // ROOT includes
 #include "TCanvas.h"
@@ -33,7 +32,6 @@ using namespace std;
 // BOOST options - silence unused local typedefs warnings
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #include "boost/program_options.hpp"
-namespace po = boost::program_options;
 
 // Utilities
 #include "Utilities/inc/HelperFunctions.hh"
@@ -41,8 +39,10 @@ namespace po = boost::program_options;
 #include "Utilities/inc/CoordinateCollection.hh"
 #include "Utilities/inc/Table.hh"
 #include "Utilities/inc/Config.hh"
-using namespace util;
 
+using namespace std;
+using namespace util;
+namespace po = boost::program_options;
 
 namespace {
 
