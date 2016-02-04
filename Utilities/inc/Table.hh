@@ -1,5 +1,5 @@
 #ifndef Mu2eUtilities_Table_hh
-#define Mu2eUtilities_able_hh
+#define Mu2eUtilities_Table_hh
 //
 // Free function for loading table Table
 //
