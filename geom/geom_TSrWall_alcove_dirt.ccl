@@ -1,0 +1,11 @@
+VolName)dirt.tsArea.alcove
+Height)18,24:2
+*)0,0
+//hFar)-2,-35:4
+//hNear)-2,-28:5
+h0)<hFar>0,1:6
+h1)<hNear>0,-2
+h2)<h1>19:5,0
+h3)<h0>19:5,0
+
+

@@ -1,0 +1,7 @@
+VolName)tsArea.trench.floor
+Height)-4,-3:6
+*)0,0
+T0)9:5,-37
+T1)<T0>0,19:1
+T2)<T1>3,0
+T3)<T0>3,0

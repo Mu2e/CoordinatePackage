@@ -1,0 +1,17 @@
+To setup this package, do:
+
+  setup mu2e
+  source setup.sh
+
+To build the package, do
+
+  make all
+
+The code is run by doing:
+
+  TestGeometry ogl geom*.txt
+
+where the arguments received are the plotting option ("pad" or "ogl"),
+and list of txt files of coordinates.
+
+
