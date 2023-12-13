@@ -1,0 +1,7 @@
+VolName)dsArea.downstreamUpstairs.floor
+Height)24:6,25:6
+*)0,0
+c1)96:4,-28:5
+Q)147:5,-28:5
+Q1)<Q>0,25
+c2)<c1>0,25

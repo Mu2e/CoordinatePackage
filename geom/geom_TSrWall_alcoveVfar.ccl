@@ -1,0 +1,8 @@
+VolName)tsArea.alcove.vertical.S
+Height)18,24:2
+*)0,0
+h)-2,-35:4
+h0)<h>0,1:6
+h1)<h0>19:5,0
+h2)<h1>0,-1:6
+

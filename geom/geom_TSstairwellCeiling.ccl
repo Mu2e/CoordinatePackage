@@ -1,0 +1,8 @@
+VolName)tsArea.stairwell.ceiling
+Height)7:6,8:6
+*)0,0
+h)13:5,-28:5
+h0)<h>4,0
+h1)<h0>0,-8:7
+h2)<h1>-4,0
+
