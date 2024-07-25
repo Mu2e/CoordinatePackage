@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Setup framework
-setup -B art v1_10_00b -q+e5:+prof
-
-# Setup root
+# This setup presumes that the muse environment has been created prior
+# to sourcing this script.
 
 # Modify binary search path
 export BASE_RELEASE=${PWD}
