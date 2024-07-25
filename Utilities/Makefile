@@ -11,7 +11,6 @@ OBJS=splitLine.o Coordinate.o CoordinateCollection.o HelperFunctions.o
 all: $(OBJS)
 
 %.o : $(SRCDIR)/%.cc
-	echo "Base release " $(BASE_RELEASE)
 	$(CC) -c $(CFLAGS) -I$(BASE_RELEASE) -I$(ROOT_INC) -I$(BOOST_INC) $^
 	@mv $@ $(OBJDIR)/
 
