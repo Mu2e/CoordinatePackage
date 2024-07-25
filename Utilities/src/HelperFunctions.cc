@@ -125,6 +125,13 @@ namespace util {
   //_______________________________________________________________________
   void check_argv( char** argv, initializer_list<string> argv_options ) {
 
+
+    // Fixme: Rob Kutschke July 25, 2020.
+    // This function is never called.  It also fails to compile.
+    // So I am commenting it out.  The compilation error is that the variable
+    // named nargs is not the number of arguments.
+    /*
+
     const int nargs = sizeof(argv)/sizeof(char*);
 
     cout << " Nargs: " << nargs << endl;
@@ -143,6 +150,7 @@ namespace util {
       if ( !optionPresent) throw invalid_argument( errMsg );
 
     }
+    */
   }
 
   //_______________________________________________________________________
