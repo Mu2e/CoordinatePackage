@@ -1,10 +1,6 @@
 //
 // Split a string, s, into pieces, using the given delimiter.
 //
-// $Id$
-// $Author$
-// $Date$
-//
 // Original author Rob Kutschke
 //
 

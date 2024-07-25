@@ -23,7 +23,7 @@ namespace util {
 
   //_____________________________
   vector<TString> get_file_list( string dir, string rootfilebase ) {
-  
+
     vector< TString > filelist;
 
     string cmd_str = "find ./" + dir + "/good/ -name \"" +rootfilebase+".root\"";
@@ -51,20 +51,20 @@ namespace util {
 
   //_________________________________
   TChain* setupTChains( TString chainName , const vector<TString>& filelist ) {
-  
+
     // Add files onto list
     TChain* chain = new TChain( chainName );
     for ( const TString& filename : filelist ) {
       chain->Add(filename);
     }
     return chain;
-  
+
   }
 
   //__________________________________
   vector<int> getColorScheme( int ncolors ) {
     vector<int> colors;
-  
+
     double Red[2]    = {0.00,1.00};
     double Green[2]  = {0.00,0.00};
     double Blue[2]   = {1.00,0.00};
@@ -85,7 +85,7 @@ namespace util {
     const bool arglist = ( arglistend->find("...") != string::npos ) ? true : false;
 
     const size_t n = arglist ? arguments.size()-1 : arguments.size();
-        
+
     if ( !arglist && static_cast<size_t>( argc ) == n ) return;
     if (  arglist && static_cast<size_t>( argc ) >= n ) return;
 
@@ -118,7 +118,7 @@ namespace util {
     errMsg += "\n";
 
     if ( !optionPresent) throw invalid_argument( errMsg );
-  
+
     return argv;
   }
 
@@ -132,7 +132,7 @@ namespace util {
     for ( int iarg(1) ; iarg<nargs ; iarg++ ) {
       const string arg ( argv[iarg] );
       string errMsg = "\n\n << " + arg + " >> not an accepted option!  Choices are:\n"   ;
-      
+
       bool optionPresent( false );
       for ( const auto& option : argv_options ){
         optionPresent |= arg.find( option ) != string::npos;
@@ -141,7 +141,7 @@ namespace util {
       errMsg += "\n";
 
       if ( !optionPresent) throw invalid_argument( errMsg );
-  
+
     }
   }
 
@@ -163,10 +163,10 @@ namespace util {
     string::size_type lastPos = str.find_first_not_of(delims, 0);
     // Find next delimiter @ end of token
     string::size_type pos     = str.find_first_of(delims, lastPos);
-    
+
     // output vector
     vector<string> tokens;
-    
+
     while (string::npos != pos || string::npos != lastPos) {
       // Found a token, add it to the vector.
       string sub = str.substr(lastPos, pos - lastPos);
@@ -179,7 +179,7 @@ namespace util {
       // token.
       pos     = str.find_first_of(delims, lastPos);
     }
-    
+
     return tokens;
   }
 
@@ -189,7 +189,7 @@ namespace util {
     ifstream ifile(file.c_str());
     //    string errMsg = "\n\n Could not open: " + file "\n";
     if (!ifile.is_open()) throw invalid_argument( "\n\n Could not open: " + file + "\n" );
-  
+
     vector<string> lines;
 
     string str;
@@ -205,7 +205,7 @@ namespace util {
   map<string,size_t> get_column_headings( const string & firstRow ) {
     vector<string> tmpList    = tokenize_str( firstRow, "|" );
     vector<string> sampleList = tokenize_str( tmpList.back() );
-    
+
     map<string,size_t> columnMap;
     for ( size_t i = 0 ; i < sampleList.size() ; i++ )
       columnMap.insert( make_pair( sampleList.at(i), i ) );

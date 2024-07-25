@@ -1,4 +1,4 @@
-# Makefile for StoppedPionAnalysis mu2e - Analysis subdir
+#
 OBJDIR=$(PWD)/obj
 BINDIR=$(PWD)/bin
 SRCDIR=$(PWD)/src
@@ -21,4 +21,4 @@ $(BINDIR)/ProduceSimpleConfig : \
 .PHONY: clean
 
 clean:
-	rm -f $(BINDIR)/* *~ 
+	rm -f $(BINDIR)/* *~
