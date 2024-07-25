@@ -1,10 +1,6 @@
 #ifndef util_Coordinate_hh
 #define util_Coordinate_hh
 //
-// $Id$
-// $Author$
-// $Date$
-//
 // Original author: Kyle Knoepfel
 
 // See docdb-xxxx for information about how the interface works.
@@ -16,15 +12,15 @@
 #include <utility>
 
 namespace worldDir {
-  enum enum_type { 
+  enum enum_type {
 
     // Instantiation
-    none=0, 
+    none=0,
 
     // Cardinal directions (world walls)
     N=2,
-    E=4, 
-    S=6, 
+    E=4,
+    S=6,
     W=8,
 
     // Corners of world
@@ -33,11 +29,11 @@ namespace worldDir {
     SE=5,
     SW=7
   };
-  
+
   inline enum_type stringToEnum( const std::string& str ) {
     enum_type type (none);
-    
-    if ( str.length() != 1 ) 
+
+    if ( str.length() != 1 )
       throw std::runtime_error("Wall option << " +str+ " >> is not supported!");
 
     switch( str.at(0) ) {
@@ -45,10 +41,10 @@ namespace worldDir {
     case 'E' : type = E; break;
     case 'S' : type = S; break;
     case 'W' : type = W; break;
-    default: 
+    default:
       throw std::runtime_error("Wall option << " +str+ " >> is not supported!");
     }
-    
+
     return type;
   }
 
@@ -56,9 +52,9 @@ namespace worldDir {
 
     std::ostringstream ss; ss << et;
 
-    if ( et%2 == 1 ) 
+    if ( et%2 == 1 )
       throw std::runtime_error("Wall enum << " +ss.str()+ " >> is not supported!");
-    
+
     std::string type;
 
     switch( et ) {
@@ -66,34 +62,34 @@ namespace worldDir {
     case E : type = "E"; break;
     case S : type = "S"; break;
     case W : type = "W"; break;
-    default: 
+    default:
       throw std::runtime_error("Wall enum << " +ss.str()+ " >> not supported!");
     }
-    
+
     return type;
-    
+
   }
 
 }
 
 namespace util {
-  
+
   class Coordinate {
-    
+
   public:
 
     typedef std::pair <int,double> FtInchPair;
     template <typename T> using Rep = std::array<T,2>;
-    
+
     // Constructors
-    explicit Coordinate( const std::string& input ); 
+    explicit Coordinate( const std::string& input );
 
     explicit Coordinate( const Rep<double>& point,
                          const std::string& label,
                          worldDir::enum_type worldBoundary,
                          bool draw,
                          bool isOut );
-    
+
     // Accessors
     const std::string& inputString() const { return inputString_; }
 
@@ -111,7 +107,7 @@ namespace util {
 
     // Metric (mm)
     double get(std::size_t i) const { return coord_.at(i); }
-    
+
     double x() const { return coord_.at(0); }
     double y() const { return coord_.at(1); }
 
@@ -121,7 +117,7 @@ namespace util {
     void setAbsCoord( const Rep<double>& rep ) { coord_ = rep; }
     void setRotation( double rot ){ rotWrtRef_ = rot; }
     void setRefLabel( const std::string& refLabel ) { refLabel_ = refLabel; }
-    
+
     void print() const;
 
     static FtInchPair makeFtInchPair( const std::string& stringToParse );
@@ -146,9 +142,9 @@ namespace util {
     Rep<FtInchPair> coordStd_;
     Rep<double>     coordRel_;
     Rep<double>     coord_;
-    
+
   };
- 
+
 } // end of namespace mu2e
 
 #endif /* util_Coordinate_hh */

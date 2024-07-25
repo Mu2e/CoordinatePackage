@@ -1,7 +1,3 @@
-// $Id$
-// $Author$
-// $Date$
-//
 // Original author: Kyle Knoepfel
 
 #include "Utilities/inc/Config.hh"
@@ -25,8 +21,8 @@ namespace {
     return str.find("dirt.") != std::string::npos;
   }
 
-  void replacementStream( std::ostringstream& os, 
-                          const std::string& varprefix, 
+  void replacementStream( std::ostringstream& os,
+                          const std::string& varprefix,
                           const std::vector<std::size_t>& v ) {
     if ( !v.empty() ) {
       os << "vector<int>    " << varprefix << "replace   = { ";
@@ -50,12 +46,12 @@ namespace {
 
 
 namespace util {
-  
+
   //=========================================================================
   CoordinateCollection::CoordinateCollection( const std::string& inputFile,
                                               const std::map<enum_type,Rep<double>>& worldCorners )
     : inputFile_( inputFile )
-    , worldCorners_( worldCorners ) 
+    , worldCorners_( worldCorners )
   {
     Table<1> inputTable = loadTable<1>( inputFile_ );
     unsigned counter(0);
@@ -69,10 +65,10 @@ namespace util {
       ++counter;
     }
   }
-  
+
   //=========================================================================
   std::string CoordinateCollection::assignVolName( const std::string& inputString ) {
-    if ( inputString.find("VolName)") == std::string::npos ) 
+    if ( inputString.find("VolName)") == std::string::npos )
       throw std::runtime_error("\nVolume name not specified in file: "+inputFile_+"\nFirst label must be:\n \"VolName)..a..string..\"");
 
     const std::size_t delimPos = inputString.find(")");
@@ -81,7 +77,7 @@ namespace util {
 
   //=========================================================================
   Coordinate::Rep<double> CoordinateCollection::assignHeight( const std::string& inputString ) {
-    if ( inputString.find("Height)") == std::string::npos ) 
+    if ( inputString.find("Height)") == std::string::npos )
       throw std::runtime_error("\nHeight of solid not specified in file: "+inputFile_+"\nSecond label must be:\n \"Height)...,...\"");
 
     return Coordinate( inputString ).getCoordRel();
@@ -95,11 +91,11 @@ namespace util {
     if ( !insertTest.second ) {
       throw std::runtime_error("Label << "+coord.label()+" >> already used!");
     }
-    
+
     // Get reference label
     if ( coordList_.empty() ) coord.setRefLabel("*");
     else if ( coord.refLabel().empty() ) coord.setRefLabel( coordList_.back().refLabel() );
-    
+
     // Get rotation wrt reference
     if ( coordList_.empty() ) coord.setRotation(0.);
     else if ( coord.rot() < -360 ) coord.setRotation( coordList_.back().rot() );
@@ -107,7 +103,7 @@ namespace util {
     if ( keyList_.find( coord.refLabel() ) == std::end(keyList_) ) {
       throw std::runtime_error("Reference label << "+coord.refLabel()+" >> does not exist yet!");
     }
-    
+
     // Get origin
     if ( !coordList_.empty() ) {
       const auto& origin = getReferenceCoordinate( coord.refLabel() );
@@ -121,28 +117,28 @@ namespace util {
     }
 
     // Add coordinate to boundary list
-    if ( coord.worldBoundary() != worldDir::none ) boundaryList_.push_back( coord );        
-    
+    if ( coord.worldBoundary() != worldDir::none ) boundaryList_.push_back( coord );
+
     coordList_.push_back( coord );
 
   }
 
   //============================================
   Coordinate CoordinateCollection::getReferenceCoordinate( const std::string& refLabel ) const {
-    
+
     auto match  = std::find_if( std::begin( coordList_ )
                                 ,std::end( coordList_)
                                 ,[&](const Coordinate& cs){ return !cs.label().compare( refLabel ); } );
-    
+
     if ( match == std::end( coordList_ ) )
       throw std::runtime_error("Reference coordinate << "+refLabel+" >> notFound!");
-    
-    return *match;    
+
+    return *match;
   }
 
   //============================================
   bool CoordinateCollection::addWorldBoundaries( const bool verbose ) {
-    
+
     if ( boundaryList_.size() < 2 ) {
       if ( verbose ) std::cout << " Not enough boundary points present " << std::endl;
       return false;
@@ -159,12 +155,12 @@ namespace util {
       std::ostringstream os; os << point.label() << "_to_" << worldDir::enumToString( point.worldBoundary() );
       wallCoords.push_back( getWallCoordinate( point, os.str() ) );
     }
-    
+
     // Reverse wall coordinate list to make consistent with handedness
     // of polygon definition
     std::reverse( wallCoords.begin(), wallCoords.end() );
 
-    // Insert corners if necessary 
+    // Insert corners if necessary
     // -- need to use reverse iterator since boundaryList is in
     //    opposite handedness of dirt polygon
     for ( auto point = std::next( boundaryList_.crbegin() ) ; point != boundaryList_.crend() ; ++point ) {
@@ -175,8 +171,8 @@ namespace util {
       if ( b1 != b2 ) {
         const auto& insertPoint = std::find_if( wallCoords.begin()
                                                 ,wallCoords.end()
-                                                ,[&](Coordinate c){ 
-                                                  return c.worldBoundary() == point->worldBoundary(); 
+                                                ,[&](Coordinate c){
+                                                  return c.worldBoundary() == point->worldBoundary();
                                                 } );
 
         wallCoords.insert( insertPoint, getCornerCoordinate( b1,b2 ) );
@@ -184,8 +180,8 @@ namespace util {
 
     }
 
-    std::copy( wallCoords.begin(), 
-               wallCoords.end(), 
+    std::copy( wallCoords.begin(),
+               wallCoords.end(),
                std::back_inserter( coordList_ ) );
 
     return true;
@@ -206,7 +202,7 @@ namespace util {
     for ( auto& token : tokens ) {
       // Capitalize first letter
       std::string tmp (token); // need to form a temporary since token iterators are const.
-      if ( tokenCounter ) tmp[0] = std::toupper( tmp[0] ); 
+      if ( tokenCounter ) tmp[0] = std::toupper( tmp[0] );
       ++tokenCounter;
       name += tmp;
     }
@@ -252,7 +248,7 @@ namespace util {
     // make list
     xstr << R"(vector<double> )" << varprefix << ".xPositions = {" << std::endl;
     ystr << R"(vector<double> )" << varprefix << ".yPositions = {" << std::endl;
-    
+
     std::size_t indexCounter(0);
     for ( std::size_t i(0) ;  i < coordList_.size() ; ++i ) {
       const auto& coord = coordList_.at(i);
@@ -284,7 +280,7 @@ namespace util {
     }
     xstr <<  R"(};)" << std::endl;
     ystr <<  R"(};)" << std::endl;
-    
+
     // Having trouble getting the move semantics to work for
     // ostringstream (perhaps it's still a bug in the compiler?), so
     // passing the oss by reference.
@@ -296,7 +292,7 @@ namespace util {
     fs << xstr.str() ;
 
     fs << std::endl;
-    
+
     fs << yReplaceOS.str();
     fs << ystr.str() ;
 
@@ -304,7 +300,7 @@ namespace util {
     fs << R"(// Local Variables:)" << std::endl;
     fs << R"(// mode:c++)"         << std::endl;
     fs << R"(// End:)"             << std::endl;
-    
+
     fs.close();
 
   }
@@ -332,9 +328,9 @@ namespace util {
 
     std::ostringstream os;
     os << " Coordinate boundaries of: "
-       << c1.worldBoundary()  
-       << " and " 
-       << c2.worldBoundary() 
+       << c1.worldBoundary()
+       << " and "
+       << c2.worldBoundary()
        << " are incongruent!";
 
     if ( diff1 == 4 && diff2 == 4 )
@@ -353,34 +349,32 @@ namespace util {
     case W : tmp.at(0) = worldCorner(SW).at(0); break;
     default : throw std::runtime_error("You should never get here!");
     }
-    
+
     return Coordinate( tmp, label, coord.worldBoundary(), true, true );
   }
-  
+
   //============================================
-  Coordinate CoordinateCollection::getCornerCoordinate( const worldDir::enum_type type1, 
+  Coordinate CoordinateCollection::getCornerCoordinate( const worldDir::enum_type type1,
                                                         const worldDir::enum_type type2 ) const {
-    
+
     static std::vector<worldDir::enum_type> nw {{N,W}};
     static std::vector<worldDir::enum_type> ne {{N,E}};
     static std::vector<worldDir::enum_type> se {{E,S}};
     static std::vector<worldDir::enum_type> sw {{S,W}};
-    
+
     std::vector<worldDir::enum_type> bounds {{ type1, type2 }};
     std::sort( bounds.begin(), bounds.end() );
-    
+
     const Rep<double>* corner;
-    
+
     std::string label;
     if      ( std::equal( bounds.begin(), bounds.end(), nw.begin() ) ) { corner = &worldCorner(NW); label = "NWcorner"; }
     else if ( std::equal( bounds.begin(), bounds.end(), ne.begin() ) ) { corner = &worldCorner(NE); label = "NEcorner"; }
     else if ( std::equal( bounds.begin(), bounds.end(), se.begin() ) ) { corner = &worldCorner(SE); label = "SEcorner"; }
     else if ( std::equal( bounds.begin(), bounds.end(), sw.begin() ) ) { corner = &worldCorner(SW); label = "SWcorner"; }
-    
-    
+
+
     return Coordinate( *corner, label, worldDir::none, true, true );
   }
-  
+
 } // end of namespace mu2e
-
-

@@ -3,10 +3,6 @@
 //
 // Split a string, s, into pieces.
 //
-// $Id$
-// $Author$
-// $Date$
-//
 // Original author Rob Kutschke
 //
 // Arguments:
