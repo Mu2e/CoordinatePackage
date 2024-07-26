@@ -21,4 +21,4 @@ $(BINDIR)/ProduceSimpleConfig : \
 .PHONY: clean
 
 clean:
-	rm -f $(BINDIR)/* *~
+	rm -f $(OBJDIR)/* $(BINDIR)/* *~
