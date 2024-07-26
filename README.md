@@ -1,7 +1,9 @@
 # CoordinatePackage
 Original Mu2e hall geometry generator
 
-Instructions to build and run in an SL7 container.
+The instructions below work for both AL9/spack and
+in an SL7 container with UPS.
+
 
 mu2einit
 git clone https://github.com/Mu2e/CoordinatePackage
@@ -12,8 +14,15 @@ source setup.sh
 make all
 ./Run/bin/ProduceSimpleConfig geom/*
 
+The output files are in output/
+Compare these to Offline/Mu2e/G4/geom/bldg.
 
---- Original instructions below -- these do not work.
+
+The original instructions from the README file are copied below.
+I have not found the source for TestGeometry or managed to get
+the ogl or pad options to work for ProduceSimpleConfig
+
+--- Original instructions start here:
 To setup this package, do:
 
   setup mu2e
